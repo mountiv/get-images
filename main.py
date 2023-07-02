@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import sys
+import urllib.parse
+
 
 def download_images(url):
     response = requests.get(url)
@@ -21,10 +23,12 @@ def download_images(url):
             if img_url.startswith('http'):
                 img_response = requests.get(img_url)
             else:
-                img_response = requests.get(url + img_url)
+                img_response = requests.get(urllib.parse.urljoin(url, img_url))
 
             # Extract the filename from the URL
-            filename = img_url.split('/')[-1]
+            parsed_url = urllib.parse.urlparse(img_url)
+            filename = os.path.basename(parsed_url.path)
+            filename = filename.split('?')[0]  # Remove the query string
 
             # Save the image to the 'images' directory
             with open(os.path.join('images', filename), 'wb') as f:
@@ -33,6 +37,7 @@ def download_images(url):
             print(f'Downloaded {filename}')
         else:
             print('Image source URL not found.')
+
 
 url = sys.argv[1]
 print("URL:", url)
