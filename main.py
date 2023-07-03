@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import os
 import sys
 import urllib.parse
+import base64
 
 
 def download_images(url):
@@ -23,7 +24,14 @@ def download_images(url):
             if img_url.startswith('http'):
                 img_response = requests.get(img_url)
             else:
-                img_response = requests.get(urllib.parse.urljoin(url, img_url))
+                if img_url.startswith('data:image'):
+                    # Decode the Base64 string
+                    image_data = base64.b64decode(img_url.split(',')[1])
+                    img_response = requests.Response()
+                    img_response._content = image_data
+
+                else:
+                    img_response = requests.get(urllib.parse.urljoin(url, img_url))
 
             # Extract the filename from the URL
             parsed_url = urllib.parse.urlparse(img_url)
